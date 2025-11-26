@@ -1,0 +1,5 @@
+{
+  "name": "Precision CNC Scanner Pro",
+  "description": "A high-fidelity 3D visualization dashboard for RGBD CNC scanning, featuring precise manual axis controls, real-time telemetry, and visual axis labeling.",
+  "requestFramePermissions": []
+}
