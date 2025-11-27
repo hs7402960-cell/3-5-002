@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { MachineScene } from './components/MachineScene';
 import { ControlPanel } from './components/ControlPanel';
+import { MatrixDisplay } from './components/MatrixDisplay';
 import { MachineState, INITIAL_STATE, DEFAULT_LIMITS } from './types';
 
 function App() {
@@ -112,23 +113,26 @@ function App() {
       />
 
       {/* Decorative Overlay Elements */}
-      <div className="absolute bottom-6 right-6 pointer-events-none select-none">
-        <div className="text-right opacity-50">
-           <h2 className="text-4xl font-black text-white tracking-tighter">RGB-D SCANNER</h2>
-           <p className="text-sm font-mono text-blue-400">MODEL: V-800 // REV: 2.5.0</p>
+      <div className="absolute bottom-6 left-6 pointer-events-none select-none">
+        <div className="text-left opacity-50">
+           <h2 className="text-4xl font-black text-white tracking-tighter">RGB-D 扫描仪</h2>
+           <p className="text-sm font-mono text-blue-400">型号: V-800 // 版本: 2.5.0</p>
         </div>
       </div>
+
+      {/* Real-time Kinematic Matrix Display */}
+      <MatrixDisplay state={state} />
 
       {/* Top Right Coordinate Readout (Heads Up Display) */}
       <div className="absolute top-6 right-6 bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-lg pointer-events-none hidden md:block shadow-xl">
         <div className="grid grid-cols-3 gap-x-8 gap-y-2 font-mono text-sm">
-            <div className="text-slate-300 font-bold">POS.X</div>
+            <div className="text-slate-300 font-bold">位置 X</div>
             <div className="text-right text-blue-300 col-span-2">{state.x.toFixed(3)}</div>
             
-            <div className="text-slate-300 font-bold">POS.Y</div>
+            <div className="text-slate-300 font-bold">位置 Y</div>
             <div className="text-right text-cyan-300 col-span-2">{state.y.toFixed(3)}</div>
             
-            <div className="text-slate-300 font-bold">POS.Z</div>
+            <div className="text-slate-300 font-bold">位置 Z</div>
             <div className="text-right text-emerald-300 col-span-2">{state.z.toFixed(3)}</div>
         </div>
       </div>

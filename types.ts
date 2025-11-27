@@ -1,3 +1,4 @@
+
 export interface MachineState {
   x: number; // 0 to 100
   y: number; // 0 to 100
@@ -25,14 +26,12 @@ export const DEFAULT_LIMITS: MachineLimits = {
 export const INITIAL_STATE: MachineState = {
   x: 50,
   y: 50,
-  z: 80, // Start high up for safety (logic inverted in visualization: high Z param = lower head, so 0 is highest safe point usually? Wait, let's check map logic.)
-         // Logic in MachineScene: mapRange(z, min, max, 11, 7.5). 
-         // If Z=0 -> Y=11 (Highest). If Z=100 -> Y=7.5 (Lowest).
-         // So to start safe (High), we want Z to be LOW.
-         // Let's set Z=0 initially.
+  z: 10,
   a: 0,
   b: 0,
 };
 
-// Correction: Let's set Z to 10 to be slightly engaged but safe.
-INITIAL_STATE.z = 10;
+// Physical Constants
+// Defines the length of the tool (pivot to tip) in logical units (mm)
+// This causes the XYZ variance when rotating AB.
+export const TOOL_LENGTH_OFFSET = 25.0; 

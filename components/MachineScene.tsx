@@ -16,6 +16,15 @@ interface SceneProps {
   isScanning: boolean;
 }
 
+// PHYSICAL CONSTANTS
+// These must match the MatrixDisplay math exactly.
+export const VISUAL_TOOL_LENGTH = 2.0; // Distance from Gimbal Center to Tip (Visual Units)
+
+// Export for reuse if needed, though we primarily use logical units now
+export const mapRange = (value: number, inMin: number, inMax: number, outMin: number, outMax: number) => {
+  return ((value - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin;
+};
+
 // -- Individual Machine Components --
 
 const AxisArrows = ({ scale = 1, labelSuffix = '' }: { scale?: number, labelSuffix?: string }) => (
@@ -82,11 +91,10 @@ const BasePlatform = () => (
 
 const DogModel = ({ isScanning }: { isScanning: boolean }) => {
   const groupRef = useRef<THREE.Group>(null);
-  const BASE_SCALE = 1.5; // Increased scale by 1.5x as requested
+  const BASE_SCALE = 1.5; 
 
   useFrame((state) => {
     if (groupRef.current && isScanning) {
-        // Subtle breathing animation when scanning
         const s = BASE_SCALE + Math.sin(state.clock.elapsedTime * 8) * 0.005;
         groupRef.current.scale.set(s, s, s);
     } else if (groupRef.current) {
@@ -94,42 +102,35 @@ const DogModel = ({ isScanning }: { isScanning: boolean }) => {
     }
   });
 
-  const skinColor = "#ea580c"; // Burnt orange / brown
+  const skinColor = "#ea580c"; 
   const skinMaterial = <meshStandardMaterial color={skinColor} roughness={0.8} />;
   
   return (
     <group ref={groupRef} position={[0, 0, 0]}>
-      {/* Platform/Base for figurine */}
       <mesh position={[0, 0.1, 0]} receiveShadow>
         <cylinderGeometry args={[2.5, 2.7, 0.2, 32]} />
         <meshStandardMaterial color="#334155" />
       </mesh>
 
       <group position={[0, 0.2, 0]}>
-        {/* Body */}
         <mesh position={[0, 0.8, 0]} castShadow receiveShadow>
             <boxGeometry args={[1.4, 1.2, 2.2]} />
             {skinMaterial}
         </mesh>
         
-        {/* Head Group */}
         <group position={[0, 1.8, 1.2]}>
-            {/* Head Main */}
             <mesh castShadow>
                 <boxGeometry args={[1, 1, 1]} />
                 {skinMaterial}
             </mesh>
-            {/* Snout */}
             <mesh position={[0, -0.1, 0.6]} castShadow>
                 <boxGeometry args={[0.6, 0.5, 0.4]} />
                 <meshStandardMaterial color="#fed7aa" /> 
             </mesh>
-            {/* Nose */}
             <mesh position={[0, 0, 0.85]}>
                 <boxGeometry args={[0.2, 0.15, 0.1]} />
                 <meshStandardMaterial color="#1e293b" /> 
             </mesh>
-            {/* Ears */}
             <mesh position={[0.4, 0.6, 0]} rotation={[0, 0, 0.2]} castShadow>
                 <boxGeometry args={[0.2, 0.6, 0.4]} />
                 <meshStandardMaterial color="#7c2d12" /> 
@@ -138,7 +139,6 @@ const DogModel = ({ isScanning }: { isScanning: boolean }) => {
                 <boxGeometry args={[0.2, 0.6, 0.4]} />
                 <meshStandardMaterial color="#7c2d12" /> 
             </mesh>
-            {/* Eyes */}
             <mesh position={[0.25, 0.1, 0.51]}>
                 <sphereGeometry args={[0.08]} />
                 <meshStandardMaterial color="black" /> 
@@ -149,7 +149,6 @@ const DogModel = ({ isScanning }: { isScanning: boolean }) => {
             </mesh>
         </group>
 
-        {/* Legs */}
         {[
             { x: 0.5, z: 0.8 }, { x: -0.5, z: 0.8 },
             { x: 0.5, z: -0.8 }, { x: -0.5, z: -0.8 }
@@ -160,7 +159,6 @@ const DogModel = ({ isScanning }: { isScanning: boolean }) => {
             </mesh>
         ))}
 
-        {/* Tail */}
         <group position={[0, 1.2, -1.1]} rotation={[0.5, 0, 0]}>
              <mesh position={[0, 0.3, 0]} castShadow>
                 <boxGeometry args={[0.2, 0.8, 0.2]} />
@@ -180,25 +178,14 @@ const DogModel = ({ isScanning }: { isScanning: boolean }) => {
 };
 
 const GantryAndHead = ({ state, limits, isScanning }: SceneProps) => {
-  // Map 0-100 to world coordinates
-  const mapRange = (value: number, inMin: number, inMax: number, outMin: number, outMax: number) => {
-    return ((value - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin;
-  };
-
   const posY = mapRange(state.y, limits.y.min, limits.y.max, -4, 4);
   const posX = mapRange(state.x, limits.x.min, limits.x.max, -4, 4);
   
-  // Z-Axis Mapping:
-  // Adjusted for 1.3x Working Distance and 1.5x Dog Scale.
-  // We need more clearance. 
-  // Old Range: 11 -> 7.5
-  // New Range: 15 (Max Height) -> 9 (Min Height)
+  // Z-Axis Mapping
   const headWorldY = mapRange(state.z, limits.z.min, limits.z.max, 15, 9);
   
-  // Gantry Geometry Height must be taller
   const gantryHeight = 16; 
 
-  // Rotation
   const rotA = THREE.MathUtils.degToRad(state.a);
   const rotB = THREE.MathUtils.degToRad(state.b);
 
@@ -221,10 +208,9 @@ const GantryAndHead = ({ state, limits, isScanning }: SceneProps) => {
           <meshStandardMaterial color="#cbd5e1" />
         </mesh>
         
-        {/* Axis Label */}
          <Html position={[-7, 1, 0]} className="pointer-events-none">
             <div className="text-xs font-bold text-slate-800 bg-white/90 px-2 py-0.5 rounded border border-slate-300 whitespace-nowrap shadow-md">
-                Gantry Y
+                龙门 Y
             </div>
         </Html>
 
@@ -237,11 +223,11 @@ const GantryAndHead = ({ state, limits, isScanning }: SceneProps) => {
            
             <Html position={[0, 1, 0]} className="pointer-events-none">
                 <div className="text-xs font-bold text-slate-800 bg-white/90 px-2 py-0.5 rounded border border-slate-300 whitespace-nowrap shadow-md">
-                    Carriage X
+                    滑架 X
                 </div>
             </Html>
 
-           {/* Z-COLUMN (Fixed to carriage, guides the slide) */}
+           {/* Z-COLUMN */}
            <mesh position={[0, -2, 0.5]} castShadow>
              <boxGeometry args={[1, 6, 1]} />
              <meshStandardMaterial color="#64748b" />
@@ -257,12 +243,14 @@ const GantryAndHead = ({ state, limits, isScanning }: SceneProps) => {
               
               <Html position={[1, 0, 0.5]} className="pointer-events-none">
                 <div className="text-xs font-bold text-slate-800 bg-white/90 px-2 py-0.5 rounded border border-slate-300 whitespace-nowrap shadow-md">
-                    Head Z
+                    机头 Z
                 </div>
               </Html>
 
-              {/* END EFFECTOR (Rotations) */}
+              {/* END EFFECTOR GIMBAL */}
+              {/* Pivot Point is here */}
               <group position={[0, -1.8, 0.8]}>
+                 
                  {/* B-Axis (Rotation around Vertical) */}
                  <group rotation={[0, rotB, 0]}>
                     <mesh position={[0, 0.2, 0]}>
@@ -270,53 +258,53 @@ const GantryAndHead = ({ state, limits, isScanning }: SceneProps) => {
                        <meshStandardMaterial color="#475569" />
                     </mesh>
                     
-                    {/* A-Axis (Tilt) */}
+                    {/* A-Axis (Tilt around Horizontal) */}
                     <group rotation={[rotA, 0, 0]}>
-                         {/* NEEDLE LASER HEAD (Center) */}
-                         <group position={[0, -1, 0]}>
-                             {/* Base Holder */}
-                             <mesh position={[0, 0.8, 0]} castShadow>
+                         
+                         {/* ROTATING ASSEMBLY */}
+                         {/* We offset geometry down so the pivot is at top */}
+                         
+                         {/* Center Needle Group */}
+                         {/* VISUAL_TOOL_LENGTH is 2.0. So tip should be at -2.0 y */}
+                         <group position={[0, 0, 0]}>
+                             
+                             {/* Holder Block */}
+                             <mesh position={[0, -0.4, 0]} castShadow>
                                 <boxGeometry args={[0.6, 0.8, 0.6]} />
                                 <meshStandardMaterial color="#334155" />
                              </mesh>
                              
-                             {/* Needle */}
-                             <mesh position={[0, 0, 0]} castShadow>
+                             {/* Needle Shaft */}
+                             {/* Length 1.8. Positioned so tip touches -2.0 */}
+                             <mesh position={[0, -1.1, 0]} castShadow>
                                 <cylinderGeometry args={[0.08, 0.02, 1.8]} />
                                 <meshStandardMaterial color="#e2e8f0" metalness={0.9} roughness={0.1} />
                              </mesh>
 
-                             {/* Laser Coordinate System Axis Gizmo */}
-                             {/* Z points DOWN (Match camera) */}
-                             <group position={[0, 0.2, 0]} rotation={[Math.PI / 2, 0, 0]}>
-                                 <AxisArrows scale={0.3} labelSuffix="L" />
+                             {/* TCP GIZMO - EXACTLY AT TIP */}
+                             <group position={[0, -VISUAL_TOOL_LENGTH, 0]} rotation={[Math.PI / 2, 0, 0]}>
+                                 <AxisArrows scale={0.3} labelSuffix="TCP" />
                              </group>
 
-                             {/* Laser Beam Emitter Visualization */}
+                             {/* Laser Beam */}
                              {isScanning && (
-                                <mesh position={[0, -2.5, 0]}>
+                                <mesh position={[0, -VISUAL_TOOL_LENGTH - 2.5, 0]}>
                                      <cylinderGeometry args={[0.005, 0.005, 5]} />
                                      <meshBasicMaterial color="red" opacity={0.6} transparent />
                                 </mesh>
                              )}
                          </group>
 
-                         {/* SIDE MOUNTED CAMERA */}
-                         {/* Now angled to match the needle direction perfectly */}
+                         {/* SIDE CAMERA */}
                          <group position={[0.4, -0.5, 0]}> 
-                            {/* Mount Bracket */}
                             <mesh position={[-0.15, 0.5, 0]}>
                                 <boxGeometry args={[0.3, 0.2, 0.2]} />
                                 <meshStandardMaterial color="#475569" />
                             </mesh>
-                            
-                            {/* Camera Body */}
                             <mesh position={[0.1, 0.2, 0]} castShadow>
                                 <boxGeometry args={[0.4, 0.6, 0.4]} />
                                 <meshStandardMaterial color="#0f172a" />
                             </mesh>
-
-                            {/* Lens (Pointing Down) */}
                             <mesh position={[0.1, -0.11, 0]} rotation={[0, 0, 0]}>
                                 <cylinderGeometry args={[0.15, 0.15, 0.1, 32]} />
                                 <meshStandardMaterial color="#333" />
@@ -325,15 +313,9 @@ const GantryAndHead = ({ state, limits, isScanning }: SceneProps) => {
                                 <cylinderGeometry args={[0.1, 0.1, 0.02, 32]} />
                                 <meshStandardMaterial color="#10b981" emissive="#059669" emissiveIntensity={0.8} />
                             </mesh>
-
-                            {/* Camera Coordinate System Axis Gizmo */}
-                            {/* Attached to lens, Z pointing down (scan dir) */}
-                            {/* X-rotation 90 deg makes Z point to -Y (Down) */}
                             <group position={[0.1, -0.16, 0]} rotation={[Math.PI/2, 0, 0]}>
                                 <AxisArrows scale={0.3} labelSuffix="C" />
                             </group>
-
-                            {/* Camera Frustum */}
                             <mesh rotation={[0, 0, 0]} position={[0.1, -3, 0]}>
                                 <coneGeometry args={[1.5, 5.5, 4, 1, true]} />
                                 <meshBasicMaterial 
@@ -362,7 +344,6 @@ export const MachineScene = (props: SceneProps) => {
         <PerspectiveCamera makeDefault position={[18, 18, 20]} fov={40} />
         <OrbitControls makeDefault minPolarAngle={0} maxPolarAngle={Math.PI / 2.1} target={[0, 3, 0]} />
         
-        {/* Lighting */}
         <ambientLight intensity={0.8} color="#ffffff" />
         <directionalLight 
           position={[10, 20, 5]} 
@@ -374,12 +355,10 @@ export const MachineScene = (props: SceneProps) => {
         <pointLight position={[-10, 8, -10]} intensity={50} color="#e0f2fe" />
         <pointLight position={[0, 5, 5]} intensity={20} color="#fff" />
 
-        {/* Environment */}
         <BasePlatform />
         <DogModel isScanning={props.isScanning} />
         <GantryAndHead {...props} />
         
-        {/* Helpers */}
         <Grid 
           renderOrder={-1} 
           position={[0, -0.01, 0]} 
